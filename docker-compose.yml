@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api-comparator:
+    build: .
+    container_name: api-comparator
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    tty: true
+    stdin_open: true
+    environment:
+      - NODE_ENV=development
+    networks:
+      - api-comparator-network
+    depends_on:
+      - api-mock-server
+
+  api-mock-server:
+    image: mockserver/mockserver
+    container_name: api-mock-server
+    ports:
+      - "1080:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/init_mock.json
+    volumes:
+      - ./mock-config:/config
+    networks:
+      - api-comparator-network
+
+networks:
+  api-comparator-network:
+    driver: bridge

@@ -1,0 +1,33 @@
+[
+    {
+      "httpRequest": {
+        "method": "GET",
+        "path": "/v1/endpoint1"
+      },
+      "httpResponse": {
+        "statusCode": 200,
+        "body": "{\"message\": \"Mock response for v1 GET\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "httpRequest": {
+        "method": "POST",
+        "path": "/v1/endpoint2",
+        "body": {
+          "param1": "value1",
+          "param2": "value2"
+        }
+      },
+      "httpResponse": {
+        "statusCode": 200,
+        "body": "{\"message\": \"Mock response for v1 POST\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    }
+  ]
+  
