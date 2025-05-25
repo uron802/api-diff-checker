@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fetchApiResponsesModule from '../fetchApiResponses';
@@ -23,7 +23,7 @@ describe('fetchApiResponses', () => {
   });
   
   describe('loadConfig', () => {
-    test('should load and parse config file when it exists', () => {
+    it('should load and parse config file when it exists', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readFileSync as jest.Mock).mockReturnValue('{"version":"v1","apis":[{"name":"API 1"}]}');
       
@@ -34,7 +34,7 @@ describe('fetchApiResponses', () => {
       expect(result).toEqual({ version: 'v1', apis: [{ name: 'API 1' }] });
     });
     
-    test('should log error and return null when file does not exist', () => {
+    it('should log error and return null when file does not exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
       
       const result = fetchApiResponsesModule.loadConfig('/path/to/nonexistent.json');
@@ -46,8 +46,15 @@ describe('fetchApiResponses', () => {
   });
   
   describe('fetchApiResponse', () => {
-    test('should fetch and return response for GET request', async () => {
-      const mockResponse = { data: { key: 'value' } };
+    it('should fetch and return response for GET request', async () => {
+      const mockResponse = { 
+        data: { key: 'value' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
+      } as AxiosResponse;
+      
       (axios as jest.MockedFunction<typeof axios>).mockResolvedValueOnce(mockResponse);
       
       const result = await fetchApiResponsesModule.fetchApiResponse(
@@ -68,8 +75,15 @@ describe('fetchApiResponses', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Fetched response from'));
     });
     
-    test('should include params in data for POST request', async () => {
-      const mockResponse = { data: { key: 'value' } };
+    it('should include params in data for POST request', async () => {
+      const mockResponse = { 
+        data: { key: 'value' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
+      } as AxiosResponse;
+      
       (axios as jest.MockedFunction<typeof axios>).mockResolvedValueOnce(mockResponse);
       
       const result = await fetchApiResponsesModule.fetchApiResponse(
@@ -89,7 +103,7 @@ describe('fetchApiResponses', () => {
       expect(result).toEqual(mockResponse.data);
     });
     
-    test('should handle API errors and return null', async () => {
+    it('should handle API errors and return null', async () => {
       const mockError = new Error('API Error');
       (axios as jest.MockedFunction<typeof axios>).mockRejectedValueOnce(mockError);
       
@@ -107,7 +121,7 @@ describe('fetchApiResponses', () => {
   });
   
   describe('saveApiResponseToFile', () => {
-    test('should save API response to file as JSON', () => {
+    it('should save API response to file as JSON', () => {
       const response = { key: 'value' };
       const filePath = '/path/to/output.json';
       
@@ -153,7 +167,7 @@ describe('fetchApiResponses', () => {
         .mockImplementation((dir: string, file: string) => `${dir}/${file}`);
     });
     
-    test('should fetch and save all API responses', async () => {
+    it('should fetch and save all API responses', async () => {
       const result = await fetchApiResponsesModule.fetchAndSaveApiResponses('/path/to/config.json', '/path/to/output');
       
       expect(result).toBe(true);
@@ -190,7 +204,7 @@ describe('fetchApiResponses', () => {
       );
     });
     
-    test('should return false when config loading fails', async () => {
+    it('should return false when config loading fails', async () => {
       jest.spyOn(fetchApiResponsesModule, 'loadConfig').mockReturnValueOnce(null);
       
       const result = await fetchApiResponsesModule.fetchAndSaveApiResponses('/path/to/config.json', '/path/to/output');
@@ -199,7 +213,7 @@ describe('fetchApiResponses', () => {
       expect(fetchApiResponsesModule.fetchApiResponse).not.toHaveBeenCalled();
     });
     
-    test('should skip saving when API response is null', async () => {
+    it('should skip saving when API response is null', async () => {
       jest.spyOn(fetchApiResponsesModule, 'fetchApiResponse')
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ data: 'response2' });
@@ -221,7 +235,7 @@ describe('fetchApiResponses', () => {
       (fs.mkdirSync as jest.Mock).mockImplementation(() => undefined);
     });
     
-    test('should return error code when arguments are missing', async () => {
+    it('should return error code when arguments are missing', async () => {
       const exitCode = await fetchApiResponsesModule.main([]);
       
       expect(exitCode).toBe(1);
@@ -229,14 +243,14 @@ describe('fetchApiResponses', () => {
       expect(fetchApiResponsesModule.fetchAndSaveApiResponses).not.toHaveBeenCalled();
     });
     
-    test('should create output directory if it does not exist', async () => {
+    it('should create output directory if it does not exist', async () => {
       await fetchApiResponsesModule.main(['v1', '/path/to/config.json']);
       
       expect(fs.existsSync).toHaveBeenCalledWith('./apiResponses/v1');
       expect(fs.mkdirSync).toHaveBeenCalledWith('./apiResponses/v1', { recursive: true });
     });
     
-    test('should not create directory if it already exists', async () => {
+    it('should not create directory if it already exists', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       
       await fetchApiResponsesModule.main(['v1', '/path/to/config.json']);
@@ -244,7 +258,7 @@ describe('fetchApiResponses', () => {
       expect(fs.mkdirSync).not.toHaveBeenCalled();
     });
     
-    test('should call fetchAndSaveApiResponses with correct arguments', async () => {
+    it('should call fetchAndSaveApiResponses with correct arguments', async () => {
       await fetchApiResponsesModule.main(['v1', '/path/to/config.json']);
       
       expect(fetchApiResponsesModule.fetchAndSaveApiResponses).toHaveBeenCalledWith(
@@ -253,13 +267,13 @@ describe('fetchApiResponses', () => {
       );
     });
     
-    test('should return success code when fetchAndSaveApiResponses succeeds', async () => {
+    it('should return success code when fetchAndSaveApiResponses succeeds', async () => {
       const exitCode = await fetchApiResponsesModule.main(['v1', '/path/to/config.json']);
       
       expect(exitCode).toBe(0);
     });
     
-    test('should return error code when fetchAndSaveApiResponses fails', async () => {
+    it('should return error code when fetchAndSaveApiResponses fails', async () => {
       jest.spyOn(fetchApiResponsesModule, 'fetchAndSaveApiResponses').mockResolvedValue(false);
       
       const exitCode = await fetchApiResponsesModule.main(['v1', '/path/to/config.json']);

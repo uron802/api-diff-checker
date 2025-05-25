@@ -1,26 +1,26 @@
 {
-  "version": "test",
+  "version": "v1",
   "apis": [
     {
-      "name": "TestAPI1",
-      "url": "http://example.com/api/test1",
+      "name": "API 1",
+      "url": "http://api-mock-server:1080/v1/endpoint1",
       "method": "GET",
       "headers": {
-        "Authorization": "test_token",
+        "Authorization": "token_v1",
         "Accept": "application/json"
       }
     },
     {
-      "name": "TestAPI2",
-      "url": "http://example.com/api/test2",
+      "name": "API 2",
+      "url": "http://api-mock-server:1080/v1/endpoint2",
       "method": "POST",
       "headers": {
-        "Authorization": "test_token",
+        "Authorization": "token_v1",
         "Content-Type": "application/json"
       },
       "params": {
-        "testParam1": "value1",
-        "testParam2": "value2"
+        "param1": "value1",
+        "param2": "value2"
       }
     }
   ]

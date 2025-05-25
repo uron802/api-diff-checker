@@ -23,7 +23,7 @@ describe('compareApiResponses', () => {
   });
   
   describe('loadApiResponse', () => {
-    test('should load JSON file when it exists', () => {
+    it('should load JSON file when it exists', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readFileSync as jest.Mock).mockReturnValue('{"data":"test"}');
       
@@ -34,7 +34,7 @@ describe('compareApiResponses', () => {
       expect(result).toEqual({ data: 'test' });
     });
     
-    test('should return null when file does not exist', () => {
+    it('should return null when file does not exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
       
       const result = compareApiResponsesModule.loadApiResponse('missing.json');
@@ -46,7 +46,7 @@ describe('compareApiResponses', () => {
   });
   
   describe('compareApiResponses', () => {
-    test('should handle when both files are missing', () => {
+    it('should handle when both files are missing', () => {
       jest.spyOn(compareApiResponsesModule, 'loadApiResponse').mockReturnValue(null);
       
       compareApiResponsesModule.compareApiResponses('file1.json', 'file2.json');
@@ -54,7 +54,7 @@ describe('compareApiResponses', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith('Both files are missing: file1.json and file2.json');
     });
     
-    test('should handle when first file is missing', () => {
+    it('should handle when first file is missing', () => {
       const loadApiResponseSpy = jest.spyOn(compareApiResponsesModule, 'loadApiResponse');
       loadApiResponseSpy.mockReturnValueOnce(null);
       loadApiResponseSpy.mockReturnValueOnce({});
@@ -64,7 +64,7 @@ describe('compareApiResponses', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith('File missing in version 1: file1.json');
     });
     
-    test('should handle when second file is missing', () => {
+    it('should handle when second file is missing', () => {
       const loadApiResponseSpy = jest.spyOn(compareApiResponsesModule, 'loadApiResponse');
       loadApiResponseSpy.mockReturnValueOnce({});
       loadApiResponseSpy.mockReturnValueOnce(null);
@@ -74,7 +74,7 @@ describe('compareApiResponses', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith('File missing in version 2: file2.json');
     });
     
-    test('should report differences between files', () => {
+    it('should report differences between files', () => {
       const loadApiResponseSpy = jest.spyOn(compareApiResponsesModule, 'loadApiResponse');
       loadApiResponseSpy.mockReturnValueOnce({ data: 'value1' });
       loadApiResponseSpy.mockReturnValueOnce({ data: 'value2' });
@@ -86,7 +86,7 @@ describe('compareApiResponses', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Differences found between'));
     });
     
-    test('should report when files match', () => {
+    it('should report when files match', () => {
       const loadApiResponseSpy = jest.spyOn(compareApiResponsesModule, 'loadApiResponse');
       loadApiResponseSpy.mockReturnValueOnce({ data: 'same' });
       loadApiResponseSpy.mockReturnValueOnce({ data: 'same' });
@@ -106,7 +106,7 @@ describe('compareApiResponses', () => {
       jest.spyOn(compareApiResponsesModule, 'compareApiResponses').mockImplementation(() => {});
     });
     
-    test('should compare all files in both directories', () => {
+    it('should compare all files in both directories', () => {
       const files = ['file1.json', 'file2.json'];
       (fs.readdirSync as jest.Mock).mockReturnValue(files);
       (fs.existsSync as jest.Mock).mockReturnValue(true);
@@ -119,7 +119,7 @@ describe('compareApiResponses', () => {
       expect(compareApiResponsesModule.compareApiResponses).toHaveBeenCalledTimes(2);
     });
     
-    test('should report when a file is missing in dir1', () => {
+    it('should report when a file is missing in dir1', () => {
       (fs.readdirSync as jest.Mock)
         .mockReturnValueOnce(['file1.json'])
         .mockReturnValueOnce(['file1.json', 'file2.json']);
@@ -133,7 +133,7 @@ describe('compareApiResponses', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith('File missing in version 1: dir1/file2.json');
     });
     
-    test('should report when a file is missing in dir2', () => {
+    it('should report when a file is missing in dir2', () => {
       (fs.readdirSync as jest.Mock)
         .mockReturnValueOnce(['file1.json', 'file2.json'])
         .mockReturnValueOnce(['file1.json']);
@@ -153,14 +153,14 @@ describe('compareApiResponses', () => {
       jest.spyOn(compareApiResponsesModule, 'compareDirectories').mockImplementation();
     });
     
-    test('should return error code when directories are not provided', () => {
+    it('should return error code when directories are not provided', () => {
       const exitCode = compareApiResponsesModule.main([]);
       
       expect(exitCode).toBe(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Please provide two directories'));
     });
     
-    test('should return error code when dir1 does not exist', () => {
+    it('should return error code when dir1 does not exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
       
       const exitCode = compareApiResponsesModule.main(['dir1', 'dir2']);
@@ -169,7 +169,7 @@ describe('compareApiResponses', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Directory not found: dir1'));
     });
     
-    test('should return error code when dir2 does not exist', () => {
+    it('should return error code when dir2 does not exist', () => {
       (fs.existsSync as jest.Mock)
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
@@ -180,7 +180,7 @@ describe('compareApiResponses', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Directory not found: dir2'));
     });
     
-    test('should compare directories and return success code when both exist', () => {
+    it('should compare directories and return success code when both exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       
       const exitCode = compareApiResponsesModule.main(['dir1', 'dir2']);
