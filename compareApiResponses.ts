@@ -3,7 +3,7 @@ import * as path from 'path';
 import { diff } from 'deep-diff';
 
 // レスポンスファイルを読み込む関数
-function loadApiResponse(filePath: string): any {
+export function loadApiResponse(filePath: string): any {
   if (fs.existsSync(filePath)) {
     return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
   } else {
@@ -12,7 +12,7 @@ function loadApiResponse(filePath: string): any {
 }
 
 // 2つのファイルを比較し、差異を表示する関数
-function compareApiResponses(file1: string, file2: string) {
+export function compareApiResponses(file1: string, file2: string) {
   const response1 = loadApiResponse(file1);
   const response2 = loadApiResponse(file2);
 
@@ -42,7 +42,7 @@ function compareApiResponses(file1: string, file2: string) {
 }
 
 // 2つのディレクトリ内の同名ファイルを比較する関数
-function compareDirectories(dir1: string, dir2: string) {
+export function compareDirectories(dir1: string, dir2: string) {
   const files1 = fs.readdirSync(dir1);
   const files2 = fs.readdirSync(dir2);
 
@@ -63,23 +63,32 @@ function compareDirectories(dir1: string, dir2: string) {
   });
 }
 
-// 実行例
-const version1Dir = process.argv[2];  // 1つ目のディレクトリ (例: v1)
-const version2Dir = process.argv[3];  // 2つ目のディレクトリ (例: v2)
+// メイン実行部分を関数化
+export function main(args: string[]) {
+  const version1Dir = args[0];  // 1つ目のディレクトリ (例: v1)
+  const version2Dir = args[1];  // 2つ目のディレクトリ (例: v2)
 
-if (!version1Dir || !version2Dir) {
-  console.error('Please provide two directories as arguments (e.g., v1 and v2)');
-  process.exit(1);
+  if (!version1Dir || !version2Dir) {
+    console.error('Please provide two directories as arguments (e.g., v1 and v2)');
+    return 1;
+  }
+
+  // ディレクトリが存在するか確認
+  if (!fs.existsSync(version1Dir)) {
+    console.error(`Directory not found: ${version1Dir}`);
+    return 1;
+  }
+  if (!fs.existsSync(version2Dir)) {
+    console.error(`Directory not found: ${version2Dir}`);
+    return 1;
+  }
+
+  compareDirectories(version1Dir, version2Dir);
+  return 0;
 }
 
-// ディレクトリが存在するか確認
-if (!fs.existsSync(version1Dir)) {
-  console.error(`Directory not found: ${version1Dir}`);
-  process.exit(1);
+// 直接実行される場合のみ実行
+if (require.main === module) {
+  const exitCode = main(process.argv.slice(2));
+  process.exit(exitCode);
 }
-if (!fs.existsSync(version2Dir)) {
-  console.error(`Directory not found: ${version2Dir}`);
-  process.exit(1);
-}
-
-compareDirectories(version1Dir, version2Dir);
