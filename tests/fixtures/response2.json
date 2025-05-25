@@ -1,0 +1,15 @@
+{
+  "id": 1,
+  "name": "Test API Response",
+  "status": "inactive",
+  "data": {
+    "field1": "value1",
+    "field2": 43,
+    "field3": false
+  },
+  "items": [
+    {"id": 1, "name": "Item 1"},
+    {"id": 2, "name": "Item 2 Updated"},
+    {"id": 4, "name": "Item 4"}
+  ]
+}

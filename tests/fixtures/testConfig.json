@@ -1,0 +1,27 @@
+{
+  "version": "test",
+  "apis": [
+    {
+      "name": "TestAPI1",
+      "url": "http://example.com/api/test1",
+      "method": "GET",
+      "headers": {
+        "Authorization": "test_token",
+        "Accept": "application/json"
+      }
+    },
+    {
+      "name": "TestAPI2",
+      "url": "http://example.com/api/test2",
+      "method": "POST",
+      "headers": {
+        "Authorization": "test_token",
+        "Content-Type": "application/json"
+      },
+      "params": {
+        "testParam1": "value1",
+        "testParam2": "value2"
+      }
+    }
+  ]
+}
