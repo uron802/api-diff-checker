@@ -1,0 +1,27 @@
+{
+  "version": "v1",
+  "apis": [
+    {
+      "name": "API 1",
+      "url": "http://api-mock-server:1080/v1/endpoint1",
+      "method": "GET",
+      "headers": {
+        "Authorization": "token_v1",
+        "Accept": "application/json"
+      }
+    },
+    {
+      "name": "API 2",
+      "url": "http://api-mock-server:1080/v1/endpoint2",
+      "method": "POST",
+      "headers": {
+        "Authorization": "token_v1",
+        "Content-Type": "application/json"
+      },
+      "params": {
+        "param1": "value1",
+        "param2": "value2"
+      }
+    }
+  ]
+}

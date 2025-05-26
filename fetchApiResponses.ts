@@ -3,17 +3,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // 設定ファイルを読み込む関数
-function loadConfig(filePath: string): any {
+export function loadConfig(filePath: string): any {
   if (fs.existsSync(filePath)) {
     return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
   } else {
     console.error(`Config file not found: ${filePath}`);
-    process.exit(1);
+    return null;
   }
 }
 
 // APIリクエストを送信し、レスポンスを取得する関数
-async function fetchApiResponse(url: string, method: Method, headers: any, params: any, version: string) {
+export async function fetchApiResponse(url: string, method: Method, headers: any, params: any, version: string) {
   try {
     const response = await axios({
       url: url,
@@ -30,14 +30,18 @@ async function fetchApiResponse(url: string, method: Method, headers: any, param
 }
 
 // APIレスポンスをファイルに保存する関数
-function saveApiResponseToFile(response: any, filePath: string) {
+export function saveApiResponseToFile(response: any, filePath: string) {
   fs.writeFileSync(filePath, JSON.stringify(response, null, 2), 'utf-8');
   console.log(`Response saved to ${filePath}`);
 }
 
 // 複数のAPIのレスポンスを取得し、ファイルに出力する関数
-async function fetchAndSaveApiResponses(configFilePath: string, outputDir: string) {
+export async function fetchAndSaveApiResponses(configFilePath: string, outputDir: string) {
   const config = loadConfig(configFilePath);
+  
+  if (!config) {
+    return false;
+  }
 
   for (const api of config.apis) {
     const response = await fetchApiResponse(api.url, api.method as Method, api.headers, api.params || {}, config.version);
@@ -47,23 +51,35 @@ async function fetchAndSaveApiResponses(configFilePath: string, outputDir: strin
       saveApiResponseToFile(response, outputFilePath);
     }
   }
+  
+  return true;
 }
 
-// コマンドライン引数からバージョン情報（v1、v2など）とJSON設定ファイルパスを取得
-const version = process.argv[2];
-const configPath = process.argv[3];
+// メイン実行関数
+export async function main(args: string[]) {
+  const version = args[0];
+  const configPath = args[1];
 
-if (!version || !configPath) {
-  console.error('Usage: ts-node fetchApiResponses.ts <version> <configFilePath>');
-  process.exit(1);
+  if (!version || !configPath) {
+    console.error('Usage: ts-node fetchApiResponses.ts <version> <configFilePath>');
+    return 1;
+  }
+
+  // 出力ディレクトリをバージョンに基づいて分ける
+  const outputDir = `./apiResponses/${version}`;
+
+  // 出力ディレクトリが存在しない場合は作成
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  const result = await fetchAndSaveApiResponses(configPath, outputDir);
+  return result ? 0 : 1;
 }
 
-// 出力ディレクトリをバージョンに基づいて分ける
-const outputDir = `./apiResponses/${version}`;
-
-// 出力ディレクトリが存在しない場合は作成
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
+// 直接実行される場合のみ実行
+if (require.main === module) {
+  main(process.argv.slice(2))
+    .then(exitCode => process.exit(exitCode))
+    .catch(() => process.exit(1));
 }
-
-fetchAndSaveApiResponses(configPath, outputDir);

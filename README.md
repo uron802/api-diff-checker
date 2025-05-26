@@ -10,6 +10,7 @@
 - [使い方](#使い方)
   - [APIレスポンスの取得](#APIレスポンスの取得)
   - [APIレスポンスの比較](#APIレスポンスの比較)
+  - [テストの実行](#テストの実行)
 
 ## セットアップ
 
@@ -145,5 +146,43 @@ ts-node compareApiResponses.ts ./apiResponses/v1 ./apiResponses/v2
     }
   ]
   ```
+
+### テストの実行
+
+プロジェクトのテストは、Jest を使用して実装されています。テストを実行するには、以下の方法を使用できます。
+
+#### ローカル環境でテストを実行
+
+ローカル環境に Node.js がインストールされている場合：
+
+```bash
+# 必要な依存関係をインストール
+npm install
+
+# テストを実行
+npm test
+```
+
+#### Docker コンテナ内でテストを実行
+
+Docker コンテナ内でテストを実行するには、次のコマンドを使用します：
+
+```bash
+# コンテナをビルドして起動
+docker-compose up --build -d
+
+# コンテナ内でテストを実行
+docker-compose exec api-comparator npm test
+```
+
+または、コンテナに入って対話的にテストを実行することもできます：
+
+```bash
+# コンテナに入る
+docker exec -it api-comparator /bin/sh
+
+# コンテナ内でテストを実行
+npm test
+```
 
 このツールを使用して、異なるバージョンのAPIレスポンスを簡単に比較できます。
