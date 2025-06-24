@@ -38,20 +38,26 @@ export function saveApiResponseToFile(response: any, filePath: string) {
 // 複数のAPIのレスポンスを取得し、ファイルに出力する関数
 export async function fetchAndSaveApiResponses(configFilePath: string, outputDir: string) {
   const config = loadConfig(configFilePath);
-  
+
   if (!config) {
     return false;
   }
 
+  const csvPath = path.join(outputDir, 'response_times.csv');
+  fs.writeFileSync(csvPath, 'API名,レスポンス時間(ms)\n', 'utf-8');
+
   for (const api of config.apis) {
+    const start = Date.now();
     const response = await fetchApiResponse(api.url, api.method as Method, api.headers, api.params || {}, config.version);
+    const elapsed = Date.now() - start;
+    fs.appendFileSync(csvPath, `${api.name},${elapsed}\n`);
     if (response) {
       // ファイル名はAPIのnameのみに
       const outputFilePath = path.join(outputDir, `${api.name}.json`);
       saveApiResponseToFile(response, outputFilePath);
     }
   }
-  
+
   return true;
 }
 
