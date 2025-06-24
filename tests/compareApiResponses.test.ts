@@ -142,12 +142,19 @@ describe('compareApiResponses', () => {
     beforeEach(() => {
       // Clear all mocks to avoid interference
       jest.clearAllMocks();
-      
+
       // Make sure the mock functions work
       (compareApiResponsesModule.compareDirectories as jest.Mock).mockImplementation((dir1, dir2) => {
         // This is just a stub implementation to test our code
         fs.readdirSync(dir1);
         fs.readdirSync(dir2);
+      });
+      (path.parse as jest.Mock).mockImplementation((p: string) => ({ name: p.replace(/\.json$/, '') }));
+      (fs.readFileSync as jest.Mock).mockImplementation((p: string) => {
+        if (p.endsWith('response_times.csv')) {
+          return 'API名,レスポンス時間(ms)\nAPI 1,100';
+        }
+        return '{"key":"value"}';
       });
     });
     
@@ -203,6 +210,23 @@ describe('compareApiResponses', () => {
       origCompareDirectories('dir1', 'dir2');
       
       expect(consoleLogSpy).toHaveBeenCalledWith('File missing in version 2: dir2/file2.json');
+    });
+
+    it('should report response time differences', () => {
+      (fs.readdirSync as jest.Mock).mockReturnValue(['API 1.json']);
+      (path.join as jest.Mock).mockImplementation((d, f) => `${d}/${f}`);
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.readFileSync as jest.Mock).mockImplementation((p: string) => {
+        if (p.endsWith('response_times.csv')) {
+          return 'API名,レスポンス時間(ms)\nAPI 1,100';
+        }
+        return '{"key":"value"}';
+      });
+
+      const origCompareDirectories = jest.requireActual('../compareApiResponses').compareDirectories;
+      origCompareDirectories('dir1', 'dir2');
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('Response time diff for API 1: 0 ms');
     });
   });
   

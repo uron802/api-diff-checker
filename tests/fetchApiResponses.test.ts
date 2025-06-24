@@ -254,6 +254,23 @@ describe('fetchApiResponses', () => {
         '/path/to/output/API 2.json'
       );
     });
+
+    it('should record response times into CSV', async () => {
+      const original = jest.requireActual('../fetchApiResponses').fetchAndSaveApiResponses;
+
+      (fs.writeFileSync as jest.Mock).mockImplementation(() => undefined);
+      (fs.appendFileSync as jest.Mock).mockImplementation(() => undefined);
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockConfig));
+      (fetchApiResponsesModule.fetchApiResponse as jest.Mock)
+        .mockResolvedValueOnce({ data: 'response1' })
+        .mockResolvedValueOnce({ data: 'response2' });
+
+      await original('/path/to/config.json', '/path/to/output');
+
+      expect(fs.writeFileSync).toHaveBeenCalledWith('/path/to/output/response_times.csv', 'API名,レスポンス時間(ms)\n', 'utf-8');
+      expect(fs.appendFileSync).toHaveBeenCalledTimes(2);
+    });
   });
   
   describe('main function', () => {

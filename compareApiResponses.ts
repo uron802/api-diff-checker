@@ -2,6 +2,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { diff } from 'deep-diff';
 
+// CSVファイルからAPI名とレスポンス時間を読み込む関数
+export function loadResponseTimes(csvPath: string): Record<string, number> {
+  const results: Record<string, number> = {};
+  if (!fs.existsSync(csvPath)) {
+    return results;
+  }
+
+  const lines = fs.readFileSync(csvPath, 'utf-8').trim().split(/\r?\n/);
+  lines.slice(1).forEach(line => {
+    const [name, time] = line.split(',');
+    if (name && time) {
+      results[name] = Number(time);
+    }
+  });
+  return results;
+}
+
 // レスポンスファイルを読み込む関数
 export function loadApiResponse(filePath: string): any {
   if (fs.existsSync(filePath)) {
@@ -46,6 +63,9 @@ export function compareDirectories(dir1: string, dir2: string) {
   const files1 = fs.readdirSync(dir1);
   const files2 = fs.readdirSync(dir2);
 
+  const times1 = loadResponseTimes(path.join(dir1, 'response_times.csv'));
+  const times2 = loadResponseTimes(path.join(dir2, 'response_times.csv'));
+
   // どちらかのディレクトリにある全てのファイルを比較
   const allFiles = new Set([...files1, ...files2]);
 
@@ -59,6 +79,14 @@ export function compareDirectories(dir1: string, dir2: string) {
       console.log(`File missing in version 2: ${file2}`);
     } else {
       compareApiResponses(file1, file2);
+      const apiName = path.parse(file).name;
+      const time1 = times1[apiName];
+      const time2 = times2[apiName];
+      if (time1 !== undefined && time2 !== undefined) {
+        const diff = time2 - time1;
+        const sign = diff > 0 ? '+' : '';
+        console.log(`Response time diff for ${apiName}: ${sign}${diff} ms`);
+      }
     }
   });
 }
